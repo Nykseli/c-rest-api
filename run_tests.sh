@@ -3,6 +3,7 @@
 # all|unit|integration defines what test are going to be run
 # if not assigned, it defaults to all
 RUN=$1
+echo $1
 if [[ $RUN != "unit" && $RUN != "integration" ]]
 then
     RUN="all"
@@ -11,14 +12,9 @@ fi
 # Fail as soon as a test fails
 set -e
 
-# Terminal colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
-
 function error() {
     echo ""
-    printf "${RED}Not all the tests passed${NC}\n"
+    echo "Not all the tests passed"
     kill -SIGTERM $U_PID &> /dev/null
 }
 trap error ERR
@@ -29,24 +25,21 @@ TESTS=(json server)
 I_TESTS=(staticfiles simpleapi)
 
 # Compile the library to make sure the changes are applied
-mkdir -p build
-cd build
-cmake ..
-make -j4
-cd ..
+make NAME=restapitest -j`grep processor /proc/cpuinfo | wc -l` &> /dev/null
 
 # Find the project objects so we can test them
-OBJECTS=build/libcrestapi.a
+OBJECTS=build/restapitest.o
 
 CC=gcc
 TEST_CFLAGS="-std=c99 -pthread -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-function -lcheck -lsubunit -lrt -lm"
+UTEST_CFLAGS="-std=c99 -pthread -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-function"
 
 if [[ $RUN == "unit" || $RUN == "all" ]]
 then
     echo "------------- Running unit tests -------------"
     for T in "${TESTS[@]}"
     do
-        $CC -o check_$T tests/check_$T.c $OBJECTS $TEST_CFLAGS
+        $CC -o check_$T tests/check_$T.c $OBJECTS $TEST_CFLAGS &> /dev/null
         ./check_$T
         rm check_$T
     done
@@ -59,7 +52,7 @@ then
     echo "------------- Running integration tests -------------"
     for U in "${I_TESTS[@]}"
     do
-        $CC -o i_$U tests/integration/i_$U.c $OBJECTS $TEST_CFLAGS
+        $CC -o i_$U tests/integration/i_$U.c $OBJECTS $TEST_CFLAGS &> /dev/null
         ./i_$U &> /dev/null &
         U_PID=$!
         python3 tests/integration/i_$U.py
@@ -70,5 +63,5 @@ then
     echo ""
 fi
 
-printf "${GREEN}All the tests passed${NC}\n"
+echo "All the tests passed"
 
