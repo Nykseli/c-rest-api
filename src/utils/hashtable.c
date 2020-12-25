@@ -35,27 +35,26 @@ uint32_t hash_string(const char* key, int length)
 static Entry* find_entry(Entry* entries, int capacity, String* key)
 {
     uint32_t index = key->hash % capacity;
-    //TODO: fix the tombstone
-    //Entry* tombstone = NULL;
+    Entry* tombstone = NULL;
+
     for (;;) {
         Entry* entry = &entries[index];
-        if (entry->key == NULL || strcmp(entry->key->chars, key->chars) == 0) {
+
+        if (entry->key == NULL) {
+            if (IS_NULL(entry->value)) {
+                // If entry->key is null or a tombstone,
+                // it can be used to add the new entry.
+                return tombstone != NULL ? tombstone : entry;
+            } else {
+                // We found a tombstone.
+                // Save the pointer so it can be used on the next loop so it can
+                // be returned as a reusable entry for the value.
+                // Tombstone has null key but non null value.
+                if (tombstone == NULL) tombstone = entry;
+            }
+        } else if (strcmp(entry->key->chars, key->chars) == 0) {
             return entry;
         }
-
-        // if (entry->key == NULL) {
-        //     if (IS_NULL(entry->value)) {
-        //         // Empty entry.
-        //         return tombstone != NULL ? tombstone : entry;
-        //     } else {
-        //         // We found a tombstone.
-        //         if (tombstone == NULL)
-        //             tombstone = entry;
-        //     }
-        // } else if (entry->key == key) {
-        //     // We found the key.
-        //     return entry;
-        // }
 
         index = (index + 1) % capacity;
     }
