@@ -120,6 +120,7 @@ struct Entry {
 #define BOOL_VAL(value) ((DataValue) { TYPE_BOOL, {value} })
 #define NULL_VAL ((DataValue) { TYPE_NULL, { 0 } })
 #define NULL_STR ((String) {NULL, -1, -1, -1})
+#define TEMP_STR(_str) ((String) {(char*)_str, (int)strlen(_str), 0, 0})
 
 #define STRING_APPEND(str, c)                                                              \
     do {                                                                                   \

@@ -131,10 +131,8 @@ bool json_get_string(JSONObject* obj, String* kw, JSONString* target)
 
 bool json_get_string_c(JSONObject* obj, const char* kw, JSONString* target)
 {
-    // TODO: how could we void allocating here?
-    String tmp = copy_chars(kw, (int)strlen(kw));
+    String tmp = TEMP_STR(kw);
     bool result = json_get_string(obj, &tmp, target);
-    STRING_FREE(&tmp);
     return result;
 }
 
@@ -167,9 +165,8 @@ bool json_get_object(JSONObject* obj, String* kw, JSONObject* target)
 
 bool json_get_object_c(JSONObject* obj, const char* kw, JSONObject* target)
 {
-    String tmp = copy_chars(kw, (int)strlen(kw));
+    String tmp = TEMP_STR(kw);
     bool val = json_get_object(obj, &tmp, target);
-    STRING_FREE(&tmp);
     return val;
 }
 
@@ -201,9 +198,8 @@ bool json_get_bool(JSONObject* obj, String* kw, JSONBool* target)
 
 bool json_get_bool_c(JSONObject* obj, const char* kw, JSONBool* target)
 {
-    String tmp = copy_chars(kw, (int)strlen(kw));
+    String tmp = TEMP_STR(kw);
     bool val = json_get_bool(obj, &tmp, target);
-    STRING_FREE(&tmp);
     return val;
 }
 
@@ -234,9 +230,8 @@ bool json_get_number(JSONObject* obj, String* kw, JSONNumber* target)
 
 bool json_get_number_c(JSONObject* obj, const char* kw, JSONNumber* target)
 {
-    String tmp = copy_chars(kw, (int)strlen(kw));
+    String tmp = TEMP_STR(kw);
     bool val = json_get_number(obj, &tmp, target);
-    STRING_FREE(&tmp);
     return val;
 }
 
@@ -268,9 +263,8 @@ bool json_get_array(JSONObject* obj, String* kw, JSONArray* target)
 
 bool json_get_array_c(JSONObject* obj, const char* kw, JSONArray* target)
 {
-    String tmp = copy_chars(kw, (int)strlen(kw));
+    String tmp = TEMP_STR(kw);
     bool val = json_get_array(obj, &tmp, target);
-    STRING_FREE(&tmp);
     return val;
 }
 
