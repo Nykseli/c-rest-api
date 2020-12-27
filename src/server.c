@@ -104,9 +104,9 @@ static void init_apitable(ApiTable* at)
     init_table(at->suburls);
 }
 
-static String** parse_keywords(char* endpoint, int* length)
+static String* parse_keywords(char* endpoint, int* length)
 {
-    String** kws = NULL;
+    String* kws = NULL;
     int e_len = (int)strlen(endpoint);
     int len = 0;
     int i, j;
@@ -120,7 +120,7 @@ static String** parse_keywords(char* endpoint, int* length)
                     break;
                 len++;
             }
-            kws = GROW_ARRAY(kws, String*, 0, *length + 1);
+            kws = GROW_ARRAY(kws, String, 0, *length + 1);
             kws[*length] = copy_chars(endpoint + i, len);
             *length = *length + 1;
             i += len;
@@ -131,18 +131,18 @@ static String** parse_keywords(char* endpoint, int* length)
 
 static DataValue create_api_data(char* endpoint, RestCallback cb)
 {
-    ApiUrl* au = ALLOCATE(ApiUrl, 1);
-    au->callback = cb;
-    au->kw_len = 0;
-    au->keywords = parse_keywords(endpoint, &au->kw_len);
+    ApiUrl au;
+    au.callback = cb;
+    au.kw_len = 0;
+    au.keywords = parse_keywords(endpoint, &au.kw_len);
 
     DataValue val;
     val.type = TYPE_API_FUNCTION;
-    val.data = (void*)au;
+    AS_API_CALL(val) = au;
     return val;
 }
 
-static String* endpoint_key(const char* uri, int len)
+static String endpoint_key(const char* uri, int len)
 {
     int i;
     for (i = 0; i < len; i++) {
@@ -229,24 +229,25 @@ void parse_paramas(Request* r, ApiUrl* au)
         //TODO: use json_set when it gets implemented
         DataValue val;
         val.type = TYPE_STRING;
-        val.data = (void*)copy_chars(r->uri.chars + j + 1, len);
-        table_set(r->params, copy_string(au->keywords[i]), val);
+        AS_STRING(val) = copy_chars(r->uri.chars + j + 1, len);
+        String keystr = copy_string(au->keywords[i]);
+        table_set(r->params, &keystr, val);
         pos = j - 1;
     }
 }
 
-static String** split_url(char* endpoint, int* amount)
+static String* split_url(char* endpoint, int* amount)
 {
-    String** val = NULL;
+    String* val = NULL;
     int pos = 0;
     int len = 1;
     int endpoint_len = (int)strlen(endpoint);
     for (int i = 1; i < endpoint_len; i++) {
         if (endpoint[i] == '/') {
-            String* tmp = copy_chars(endpoint + pos, len);
+            String tmp = copy_chars(endpoint + pos, len);
             pos = len + pos;
             len = 0;
-            val = GROW_ARRAY(val, String*, 0, *amount + 1);
+            val = GROW_ARRAY(val, String, 0, *amount + 1);
             val[*amount] = tmp;
             *amount += 1;
             if (endpoint[i + 1] == ':')
@@ -254,25 +255,25 @@ static String** split_url(char* endpoint, int* amount)
         }
         len++;
     }
-    String* tmp = copy_chars(endpoint + pos, len);
-    val = GROW_ARRAY(val, String*, 0, *amount + 1);
+    String tmp = copy_chars(endpoint + pos, len);
+    val = GROW_ARRAY(val, String, 0, *amount + 1);
     val[*amount] = tmp;
     *amount += 1;
 
     return val;
 }
 
-ApiUrl* get_call_back(RestServer* rs, String* url)
+ApiUrl* get_call_back(RestServer* rs, String url)
 {
     int len = 0;
-    String** splits = split_url(url->chars, &len);
+    String* splits = split_url(url.chars, &len);
     Table* tmp_table = &rs->urls;
     ApiUrl* return_url = NULL;
     DataValue val;
-    bool found = table_get(tmp_table, splits[0], &val);
-    if (!found || val.data == NULL)
+    bool found = table_get(tmp_table, &splits[0], &val);
+    if (!found || AS_VOID(val) == NULL)
         goto end;
-    ApiTable* at = (ApiTable*)val.data;
+    ApiTable* at = (ApiTable*)AS_VOID(val);
     for (int i = 0; i < len; i++) {
         if (i == len - 1) {
             if (at->urls[0].kw_len == 0)
@@ -280,9 +281,9 @@ ApiUrl* get_call_back(RestServer* rs, String* url)
         } else {
             if (at->suburls != NULL && at->suburls->count != 0) {
                 // Test if there is a table for following keyword
-                bool found = table_get(at->suburls, splits[i + 1], &val);
-                if (found && val.data != NULL) {
-                    at = (ApiTable*)val.data;
+                bool found = table_get(at->suburls, &splits[i + 1], &val);
+                if (found && AS_VOID(val) != NULL) {
+                    at = (ApiTable*)AS_VOID(val);
                     tmp_table = at->suburls;
                     continue;
                 }
@@ -306,7 +307,7 @@ ApiUrl* get_call_back(RestServer* rs, String* url)
 
 end:
     for (int i = 0; i < len; i++) {
-        STRINGP_FREE(splits[i]);
+        STRING_FREE(&splits[i]);
     }
     free(splits);
     return return_url;
@@ -318,13 +319,13 @@ void add_url(RestServer* rs, char* endpoint, RestCallback cb)
     //TODO: throw an error if the endpoint already exists;
 
     int len = 0;
-    String** splits = split_url(endpoint, &len);
+    String* splits = split_url(endpoint, &len);
     Table* tmp_table = &rs->urls;
     for (int i = 0; i < len; i++) {
         if (i == len - 1) {
             DataValue val;
-            bool found = table_get(tmp_table, splits[i], &val);
-            if (!found || val.data == NULL) {
+            bool found = table_get(tmp_table, &splits[i], &val);
+            if (!found || AS_VOID(val) == NULL) {
                 ApiTable* at = ALLOCATE(ApiTable, 1);
                 init_apitable(at);
                 at->urls = ALLOCATE(ApiUrl, 1);
@@ -334,30 +335,29 @@ void add_url(RestServer* rs, char* endpoint, RestCallback cb)
                 at->urls_len++;
                 DataValue d_val;
                 d_val.type = TYPE_API_FUNCTION;
-                d_val.data = (void*)at;
-                table_set(tmp_table, splits[i], d_val);
+                AS_VOID(d_val) = (void*)at;
+                table_set(tmp_table, &splits[i], d_val);
             } else {
-                ApiTable* at = (ApiTable*)val.data;
+                ApiTable* at = (ApiTable*)AS_VOID(val);
                 at->urls = GROW_ARRAY(at->urls, ApiUrl, 0, at->urls_len + 1);
                 at->urls[at->urls_len].kw_len = 0;
                 at->urls[at->urls_len].keywords = parse_keywords(endpoint, &at->urls[at->urls_len].kw_len);
                 at->urls[at->urls_len].callback = cb;
                 at->urls_len++;
             }
-            //table_set(tmp_table, splits[i], create_api_data(endpoint, cb));
         } else {
             DataValue val;
-            bool found = table_get(tmp_table, splits[i], &val);
-            if (!found || val.data == NULL) {
+            bool found = table_get(tmp_table, &splits[i], &val);
+            if (!found || AS_VOID(val) == NULL) {
                 ApiTable* at = ALLOCATE(ApiTable, 1);
                 init_apitable(at);
                 DataValue d_val;
                 d_val.type = TYPE_API_FUNCTION;
-                d_val.data = (void*)at;
-                table_set(tmp_table, splits[i], d_val);
+                AS_VOID(d_val) = (void*)at;
+                table_set(tmp_table, &splits[i], d_val);
                 tmp_table = at->suburls;
             } else {
-                tmp_table = ((ApiTable*)val.data)->suburls;
+                tmp_table = ((ApiTable*)AS_VOID(val))->suburls;
             }
         }
     }

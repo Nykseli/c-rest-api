@@ -4,17 +4,17 @@
 #include "utils/hashtable.h"
 #include "utils/memory.h"
 
-static String* allocate_string(char* chars, int length, uint32_t hash)
+static String allocate_string(char* chars, int length, uint32_t hash)
 {
-    String* string = ALLOCATE(String, 1);
-    string->len = length;
-    string->chars = chars;
-    string->hash = hash;
+    String string;
+    string.len = length;
+    string.chars = chars;
+    string.hash = hash;
 
     return string;
 }
 
-String* copy_chars(const char* chars, int length)
+String copy_chars(const char* chars, int length)
 {
     uint32_t hash = hash_string(chars, length);
 
@@ -24,9 +24,10 @@ String* copy_chars(const char* chars, int length)
 
     return allocate_string(tmp_chars, length, hash);
 }
-String* copy_string(const String* str)
+
+String copy_string(const String str)
 {
-    return copy_chars(str->chars, str->len);
+    return copy_chars(str.chars, str.len);
 }
 
 void copy_data_value(DataValue* value)
@@ -36,17 +37,18 @@ void copy_data_value(DataValue* value)
     switch (value->type) {
     case TYPE_STRING: {
 
-        value->data = (void*)copy_string((String*)value->data);
+        value->data.string = copy_string(value->data.string);
     } break;
 
     case TYPE_OBJECT:
-        value->data = (void*)copy_table((Table*)value->data);
+        value->data.obj = copy_table(value->data.obj);
         break;
 
     default:
         break;
     }
 }
+
 void init_array(Array* arr)
 {
     arr->values = NULL;

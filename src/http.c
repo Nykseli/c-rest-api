@@ -136,7 +136,7 @@ void http_200(Response* r, Filetype type)
     send(r->conn.conn_fd, buf, strlen(buf), 0);
 }
 
-void send_json(Response* r, JSONObject* obj)
+void send_json(Response* r, JSONObject obj)
 {
     char buf[256];
 
@@ -148,9 +148,9 @@ void send_json(Response* r, JSONObject* obj)
     send(r->conn.conn_fd, buf, strlen(buf), 0);
     strcpy(buf, "\r\n");
     send(r->conn.conn_fd, buf, strlen(buf), 0);
-    String* str = json_to_string(obj);
-    send(r->conn.conn_fd, str->chars, str->len, 0);
-    STRINGP_FREE(str);
+    String str = json_to_string(obj);
+    send(r->conn.conn_fd, str.chars, str.len, 0);
+    STRING_FREE(&str);
 }
 
 void send_file(Response* r, const char* filepath)
@@ -189,7 +189,7 @@ void* accept_client(void* clientptr)
     Request r;
     init_request(&r);
     parse_request(&r, &conn);
-    ApiUrl* au = get_call_back(&__rs, &r.uri);
+    ApiUrl* au = get_call_back(&__rs, r.uri);
     if (au != NULL) {
         parse_paramas(&r, au);
         (au->callback)(&resp, &r);

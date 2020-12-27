@@ -13,7 +13,7 @@ typedef enum {
 
 void http_404(Response* resp);
 void http_200(Response* r, Filetype type);
-void send_json(Response* resp, JSONObject* obj);
+void send_json(Response* resp, JSONObject obj);
 /*
 * Send a file content basend on the filetype (.html, .css, .js etc)
 * Send 404 if file is not found
