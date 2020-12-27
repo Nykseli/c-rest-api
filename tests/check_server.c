@@ -13,11 +13,11 @@ START_TEST(simple_rest_callback_t)
     RestServer rs;
     init_server(&rs);
     add_url(&rs, "/api", simple_rest_callback_fun);
-    String* url = copy_chars("/api", strlen("/api"));
+    String url = copy_chars("/api", strlen("/api"));
     ApiUrl* au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(simple_global_int, 10);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
 }
 END_TEST
 
@@ -132,133 +132,132 @@ START_TEST(stress_rest_callback_t)
     add_url(&rs, "/backend/error/:id", stress_backend_error_id_fun);
     add_url(&rs, "/backend", stress_backend_fun);
     add_url(&rs, "/online", stress_online_fun);
-    String* url = copy_chars("/api", strlen("/api"));
+    String url = copy_chars("/api", strlen("/api"));
     ApiUrl* au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 10);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/api/test/name", strlen("/api/test/name"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 11);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/api/test/name/endpoint", strlen("/api/test/name/endpoint"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 12);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/api/name/123", strlen("/api/name/123"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 13);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/api/name/1234/test", strlen("/api/name/1234/test"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 14);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/api/backend/username/delete/2", strlen("/api/backend/username/delete/2"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 15);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/api/backend/username/add/4", strlen("/api/backend/username/add/4"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 16);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/api/backend/username/get/33", strlen("/api/backend/username/get/33"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 17);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/api/frontend/get/main", strlen("/api/frontend/get/main"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 18);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/api/frontend/get/home", strlen("/api/frontend/get/home"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 19);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/api/frontend/get/blog", strlen("/api/frontend/get/blog"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 20);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/api/frontend/get/blog/2", strlen("/api/frontend/get/blog/2"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 21);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/", strlen("/"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 22);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/website/endpoint/1/2/3", strlen("/website/endpoint/1/2/3"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 23);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/website/report/4", strlen("/website/report/4"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 24);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/website/error", strlen("/website/error"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 25);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/website/status", strlen("/website/status"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 26);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/backend/status", strlen("/backend/status"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 27);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/backend/error/2", strlen("/backend/error/2"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 28);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/backend", strlen("/backend"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 29);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
     url = copy_chars("/online", strlen("/online"));
     au = get_call_back(&rs, url);
     (au->callback)(NULL, NULL);
     ck_assert_int_eq(stress_global_int, 30);
-    STRINGP_FREE(url);
+    STRING_FREE(&url);
 }
 END_TEST
 
-String* global_parameter_string1 = NULL;
-String* global_parameter_string2 = NULL;
-String* global_parameter_string3 = NULL;
+String global_parameter_string1;
+String global_parameter_string2;
+String global_parameter_string3;
 
-#include <stdio.h>
 void parameter_api_id_fun(Response* r, Request* test)
 {
-    global_parameter_string1 = json_get_string_c(test->params, "id");
+    json_get_string_c(test->params, "id", &global_parameter_string1);
 }
 void parameter_api_id_pos_fun(Response* r, Request* test)
 {
-    global_parameter_string1 = json_get_string_c(test->params, "id");
-    global_parameter_string2 = json_get_string_c(test->params, "pos");
+    json_get_string_c(test->params, "id", &global_parameter_string1);
+    json_get_string_c(test->params, "pos", &global_parameter_string2);
 }
 void parameter_endpoint_id_fun(Response* r, Request* test)
 {
-    global_parameter_string1 = json_get_string_c(test->params, "id");
-    global_parameter_string2 = json_get_string_c(test->params, "pos");
-    global_parameter_string3 = json_get_string_c(test->params, "end");
+    json_get_string_c(test->params, "id", &global_parameter_string1);
+    json_get_string_c(test->params, "pos", &global_parameter_string2);
+    json_get_string_c(test->params, "end", &global_parameter_string3);
 }
 
 START_TEST(parameter_rest_callback_t)
@@ -266,40 +265,40 @@ START_TEST(parameter_rest_callback_t)
     RestServer rs;
     init_server(&rs);
     add_url(&rs, "/api/:id", parameter_api_id_fun);
-    String* url = copy_chars("/api/123", strlen("/api/123"));
+    String url = copy_chars("/api/123", strlen("/api/123"));
     ApiUrl* au = get_call_back(&rs, url);
     Request r;
     init_request(&r);
-    r.uri = *url;
+    r.uri = url;
     parse_paramas(&r, au);
     (au->callback)(NULL, &r);
-    ck_assert_str_eq(global_parameter_string1->chars, "123");
-    STRINGP_FREE(url);
-    STRINGP_FREE(global_parameter_string1);
+    ck_assert_str_eq(global_parameter_string1.chars, "123");
+    STRING_FREE(&url);
+    STRING_FREE(&global_parameter_string1);
     add_url(&rs, "/api/:id/:pos", parameter_api_id_pos_fun);
     url = copy_chars("/api/321/name", strlen("/api/321/name"));
     au = get_call_back(&rs, url);
-    r.uri = *url;
+    r.uri = url;
     parse_paramas(&r, au);
     (au->callback)(NULL, &r);
-    ck_assert_str_eq(global_parameter_string1->chars, "321");
-    ck_assert_str_eq(global_parameter_string2->chars, "name");
-    STRINGP_FREE(url);
-    STRINGP_FREE(global_parameter_string1);
-    STRINGP_FREE(global_parameter_string2);
+    ck_assert_str_eq(global_parameter_string1.chars, "321");
+    ck_assert_str_eq(global_parameter_string2.chars, "name");
+    STRING_FREE(&url);
+    STRING_FREE(&global_parameter_string1);
+    STRING_FREE(&global_parameter_string2);
     add_url(&rs, "/endpoint/:id/:pos/:end", parameter_endpoint_id_fun);
     url = copy_chars("/endpoint/name/end/len", strlen("/endpoint/name/end/len"));
     au = get_call_back(&rs, url);
-    r.uri = *url;
+    r.uri = url;
     parse_paramas(&r, au);
     (au->callback)(NULL, &r);
-    ck_assert_str_eq(global_parameter_string1->chars, "name");
-    ck_assert_str_eq(global_parameter_string2->chars, "end");
-    ck_assert_str_eq(global_parameter_string3->chars, "len");
-    STRINGP_FREE(url);
-    STRINGP_FREE(global_parameter_string1);
-    STRINGP_FREE(global_parameter_string2);
-    STRINGP_FREE(global_parameter_string3);
+    ck_assert_str_eq(global_parameter_string1.chars, "name");
+    ck_assert_str_eq(global_parameter_string2.chars, "end");
+    ck_assert_str_eq(global_parameter_string3.chars, "len");
+    STRING_FREE(&url);
+    STRING_FREE(&global_parameter_string1);
+    STRING_FREE(&global_parameter_string2);
+    STRING_FREE(&global_parameter_string3);
 }
 END_TEST
 
